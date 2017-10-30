@@ -1,0 +1,38 @@
+
+# coding: utf-8
+
+import urllib
+import os.path 
+import os 
+import glob 
+import requests
+
+codgeo = input('Indiquez les codes insee des communes dont vous souhaitez récupérez le cadastre ')
+list_codgeo = codgeo.split()
+
+dpt = []
+for el in list_codgeo:
+    dpt.append(el[:2])   
+
+liens = []
+x=0
+url_bat='https://cadastre.data.gouv.fr/data/etalab-cadastre/latest/geojson/communes/%s/%s/cadastre-%s-batiments.json.gz'
+url_par='https://cadastre.data.gouv.fr/data/etalab-cadastre/latest/geojson/communes/%s/%s/cadastre-%s-parcelles.json.gz'
+url_com='https://cadastre.data.gouv.fr/data/etalab-cadastre/latest/geojson/communes/%s/%s/cadastre-%s-communes.json.gz'
+for el in list_codgeo:
+    liens+=((url_bat % (dpt[x],list_codgeo[x],list_codgeo[x])), (url_par % (dpt[x],list_codgeo[x],list_codgeo[x])), (url_com % (dpt[x],list_codgeo[x],list_codgeo[x])))
+    x+=1
+
+x=0
+for el in liens:
+    r = requests.get(liens[x], stream=True)
+    with open(('C:/Users/ferra/Dev/Récupération_cadastre/%s' % (liens[x][93:])), 'wb') as f:
+        f.write(r.content)
+    x+=1
+
+
+
+# In[ ]:
+
+
+
