@@ -29,10 +29,3 @@ for el in liens:
     with open(('C:/Users/ferra/Dev/Récupération_cadastre/%s' % (liens[x][93:])), 'wb') as f:
         f.write(r.content)
     x+=1
-
-
-
-# In[ ]:
-
-
-
