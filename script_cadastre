@@ -6,6 +6,7 @@ import os.path
 import os 
 import glob 
 import requests
+import gzip
 
 codgeo = input('Indiquez les codes insee des communes dont vous souhaitez récupérez le cadastre ')
 list_codgeo = codgeo.split()
@@ -26,6 +27,17 @@ for el in list_codgeo:
 x=0
 for el in liens:
     r = requests.get(liens[x], stream=True)
-    with open(('C:/Users/ferra/Dev/Récupération_cadastre/%s' % (liens[x][93:])), 'wb') as f:
+    with open(('C:/Users/ferra/Dev/cadastre_geojson/%s' % (liens[x][93:])), 'wb') as f:
         f.write(r.content)
     x+=1
+
+source_dir = "C:/Users/Vincent/Dev/cadastre_geojson"
+dest_dir = "C:/Users/Vincent/Dev/cadastre_geojson"
+
+for src_name in glob.glob(os.path.join(source_dir, '*.gz')):
+    base = os.path.basename(src_name)
+    dest_name = os.path.join(dest_dir, base[:-3])
+    with gzip.open(src_name, 'rb') as infile:
+        with open(dest_name, 'wb') as outfile:
+            for line in infile:
+                outfile.write(line)
