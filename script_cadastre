@@ -14,31 +14,37 @@ import gzip
 import re
 import shutil
 
-codgeo = input('Indiquez les codes insee des communes dont vous souhaitez récupérer le cadastre ')
-list_codgeo = re.split('[;,\s]\s*', codgeo)
+links = []
 
-dpt = []
-for el in list_codgeo:
-    dpt.append(el[:2])   
+url_bat = 'https://cadastre.data.gouv.fr/data/etalab-cadastre/latest/geojson/communes/%s/%s/cadastre-%s-batiments.json.gz'
+url_par = 'https://cadastre.data.gouv.fr/data/etalab-cadastre/latest/geojson/communes/%s/%s/cadastre-%s-parcelles.json.gz'
+url_com = 'https://cadastre.data.gouv.fr/data/etalab-cadastre/latest/geojson/communes/%s/%s/cadastre-%s-communes.json.gz'
 
-liens = []
-x=0
-url_bat='https://cadastre.data.gouv.fr/data/etalab-cadastre/latest/geojson/communes/%s/%s/cadastre-%s-batiments.json.gz'
-url_par='https://cadastre.data.gouv.fr/data/etalab-cadastre/latest/geojson/communes/%s/%s/cadastre-%s-parcelles.json.gz'
-url_com='https://cadastre.data.gouv.fr/data/etalab-cadastre/latest/geojson/communes/%s/%s/cadastre-%s-communes.json.gz'
-for el in list_codgeo:
-    liens+=((url_bat % (dpt[x],list_codgeo[x],list_codgeo[x])), (url_par % (dpt[x],list_codgeo[x],list_codgeo[x])), (url_com % (dpt[x],list_codgeo[x],list_codgeo[x])))
-    x+=1
+userInput = input('Indiquez les codes insee des communes dont vous souhaitez récupérer le cadastre ')
+codgeos = re.split('[;,\s]\s*', userInput)
 
-x=0
-for el in liens:
-    r = requests.get(liens[x], stream=True)
-    with open(('C:/Users/ferra/Dev/cadastre_geojson/%s' % (liens[x][93:])), 'wb') as f:
-        f.write(r.content)
-    x+=1
+for codgeo in codgeos:
+    dpt = codgeo[:2]
+    links += ((url_bat % (dpt, codgeo, codgeo)), (url_par % (dpt, codgeo, codgeo)), (url_com % (dpt, codgeo, codgeo)))  
 
-source_dir = "C:/Users/Vincent/Dev/cadastre_geojson"
+try:
+    os.mkdir('temp')
+except OSError:
+    pass
+
+try:
+    os.mkdir('shapes')
+except OSError:
+    pass
+
+source_dir = "C:/Users/Vincent/Dev/cadastre_geojson/temp"
 dest_dir = "C:/Users/Vincent/Dev/cadastre_geojson"
+
+for link in links:
+    r = requests.get(link, stream=True)
+    with open(('C:/Users/Vincent/Dev/cadastre_geojson/%s' % (link[93:])), 'wb') as f:
+        f.write(r.content)
+        f.close()
 
 for src_name in glob.glob(os.path.join(source_dir, '*.gz')):
     base = os.path.basename(src_name)
