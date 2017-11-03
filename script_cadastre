@@ -9,7 +9,7 @@ import requests
 import gzip
 import re
 
-codgeo = input('Indiquez les codes insee des communes dont vous souhaitez récupérez le cadastre ')
+codgeo = input('Indiquez les codes insee des communes dont vous souhaitez récupérer le cadastre ')
 list_codgeo = re.split('[;,\s]\s*', codgeo)
 
 dpt = []
