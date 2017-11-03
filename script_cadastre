@@ -1,5 +1,12 @@
-#!/usr/bin/env python3
+
 # coding: utf-8
+
+# ## Paramètres généraux
+
+# In[1]:
+
+#!/usr/bin/env python3
+
 
 __author__ = ['[Vincent Ferrand](https://github.com/vincz100)']
 __date__ = '2017.11.03'
@@ -12,28 +19,20 @@ import requests
 import gzip
 import re
 import shutil
+import geopandas as gpd
 
 """
 
 Download cadastre files from data.gouv.fr in geojson with imputs'user : 'code insee'
 Extract files in a "shapes" folder
-Reprojet files from epsg:4136 to epsg:2154
+Reproject files from epsg:4136 to epsg:2154
 
 """
 
-
 links = []
 
-url_bat = 'https://cadastre.data.gouv.fr/data/etalab-cadastre/latest/geojson/communes/%s/%s/cadastre-%s-batiments.json.gz'
-url_par = 'https://cadastre.data.gouv.fr/data/etalab-cadastre/latest/geojson/communes/%s/%s/cadastre-%s-parcelles.json.gz'
-url_com = 'https://cadastre.data.gouv.fr/data/etalab-cadastre/latest/geojson/communes/%s/%s/cadastre-%s-communes.json.gz'
-
-userInput = input('Indiquez les codes insee des communes dont vous souhaitez récupérer le cadastre ')
-codgeos = re.split('[;,\s]\s*', userInput)
-
-for codgeo in codgeos:
-    dpt = codgeo[:2]
-    links += ((url_bat % (dpt, codgeo, codgeo)), (url_par % (dpt, codgeo, codgeo)), (url_com % (dpt, codgeo, codgeo)))  
+source_dir = "C:/Users/Vincent/Dev/cadastre_geojson/temp"
+dest_dir = "C:/Users/Vincent/Dev/cadastre_geojson/shapes/"
 
 try:
     os.mkdir('temp')
@@ -45,8 +44,22 @@ try:
 except OSError:
     pass
 
-source_dir = "C:/Users/Vincent/Dev/cadastre_geojson/temp"
-dest_dir = "C:/Users/Vincent/Dev/cadastre_geojson/temp"
+url_bat = 'https://cadastre.data.gouv.fr/data/etalab-cadastre/latest/geojson/communes/%s/%s/cadastre-%s-batiments.json.gz'
+url_par = 'https://cadastre.data.gouv.fr/data/etalab-cadastre/latest/geojson/communes/%s/%s/cadastre-%s-parcelles.json.gz'
+url_com = 'https://cadastre.data.gouv.fr/data/etalab-cadastre/latest/geojson/communes/%s/%s/cadastre-%s-communes.json.gz'
+
+# ## Input utilisateur
+
+userInput = input('Indiquez les codes insee des communes dont vous souhaitez récupérer le cadastre ')
+codgeos = re.split('[;,\s]\s*', userInput)
+
+# ## Reconstitution des liens html
+
+for codgeo in codgeos:
+    dpt = codgeo[:2]
+    links += ((url_bat % (dpt, codgeo, codgeo)), (url_par % (dpt, codgeo, codgeo)), (url_com % (dpt, codgeo, codgeo)))
+
+# ## Récupération des données sur le web
 
 for link in links:
     r = requests.get(link, stream=True)
@@ -56,24 +69,17 @@ for link in links:
 
 for src_name in glob.glob(os.path.join(source_dir, '*.gz')):
     base = os.path.basename(src_name)
-    dest_name = os.path.join(dest_dir, base[:-3])
+    dest_name = os.path.join(source_dir, base[:-3])
     with gzip.open(src_name, 'rb') as infile:
         with open(dest_name, 'wb') as outfile:
             for line in infile:
                 outfile.write(line)
 
-try:
-    os.mkdir('shapes')
-except OSError:
-    pass
-
-source_dir = "C:/Users/Vincent/Dev/cadastre_geojson/temp"
-dest_dir = "C:/Users/Vincent/Dev/cadastre_geojson/shapes/"
 shape_name = "C:/Users/Vincent/Dev/cadastre_geojson/shapes/%s.shp"
 
 for src_name in glob.glob(os.path.join(source_dir, '*.json')):
-    layer = gpd.read_file(src_name)
-    layer.to_crs(epsg=2154)
+    layer = gpd.read_file(src_name, crs={'init': 'epsg:4326'})
+    layer = layer.to_crs({'init': 'epsg:2154'})
     dest_name = (src_name[43:-6:])
     layer.to_file(driver = 'ESRI Shapefile', filename = (shape_name % (dest_name)))
 
