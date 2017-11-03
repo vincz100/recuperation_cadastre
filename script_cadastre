@@ -46,11 +46,11 @@ except OSError:
     pass
 
 source_dir = "C:/Users/Vincent/Dev/cadastre_geojson/temp"
-dest_dir = "C:/Users/Vincent/Dev/cadastre_geojson"
+dest_dir = "C:/Users/Vincent/Dev/cadastre_geojson/temp"
 
 for link in links:
     r = requests.get(link, stream=True)
-    with open(('C:/Users/Vincent/Dev/cadastre_geojson/%s' % (link[93:])), 'wb') as f:
+    with open(('C:/Users/Vincent/Dev/cadastre_geojson/temp/%s' % (link[93:])), 'wb') as f:
         f.write(r.content)
         f.close()
 
@@ -61,5 +61,20 @@ for src_name in glob.glob(os.path.join(source_dir, '*.gz')):
         with open(dest_name, 'wb') as outfile:
             for line in infile:
                 outfile.write(line)
+
+try:
+    os.mkdir('shapes')
+except OSError:
+    pass
+
+source_dir = "C:/Users/Vincent/Dev/cadastre_geojson/temp"
+dest_dir = "C:/Users/Vincent/Dev/cadastre_geojson/shapes/"
+shape_name = "C:/Users/Vincent/Dev/cadastre_geojson/shapes/%s.shp"
+
+for src_name in glob.glob(os.path.join(source_dir, '*.json')):
+    layer = gpd.read_file(src_name)
+    layer.to_crs(epsg=2154)
+    dest_name = (src_name[43:-6:])
+    layer.to_file(driver = 'ESRI Shapefile', filename = (shape_name % (dest_name)))
 
 shutil.rmtree('C:/Users/Vincent/Dev/cadastre_geojson/temp')
