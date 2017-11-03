@@ -1,12 +1,6 @@
 
 # coding: utf-8
-
-# ## Paramètres généraux
-
-# In[1]:
-
 #!/usr/bin/env python3
-
 
 __author__ = ['[Vincent Ferrand](https://github.com/vincz100)']
 __date__ = '2017.11.03'
